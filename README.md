@@ -32,6 +32,7 @@ This is a simple project to demonstrate the Clean Architecture using the Hono an
   ```
 
   <https://bun.sh/docs/installation>
+
 2. Clone the repository
 
   ```bash
