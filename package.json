@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "lint": "biome lint ./src",
+    "format": "biome format ./src"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "axios-cache-interceptor": "^1.5.1",
+    "hono": "^4.0.9",
+    "inversify": "^6.0.2",
+    "pokenode-ts": "^1.20.0",
+    "reflect-metadata": "^0.2.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.5.3",
+    "@cloudflare/workers-types": "^4.20240208.0",
+    "wrangler": "^3.25.0"
+  }
+}
