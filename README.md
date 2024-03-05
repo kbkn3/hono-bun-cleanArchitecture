@@ -7,8 +7,10 @@ This is a simple project to demonstrate the Clean Architecture using the Hono an
 ## Demo
 
 - `/:message` - Returns the message in the path parameter.
+
   <https://hono-bun-clean-architecture.ken0421wabu.workers.dev/HelloWorld>
 - `/pokemon/:id` - Returns the pokemon with the id in the path parameter.
+
   <https://hono-bun-clean-architecture.ken0421wabu.workers.dev/pokemon/1>
 
 ## Technologies
