@@ -5,27 +5,10 @@ import {
   PokemonRepositoryDto,
 } from "@/application/repositories/pokemon/pokemon.model";
 import { injectable } from "inversify";
-// import { PokemonClient } from "pokenode-ts";
 
 @injectable()
 export class PokemonImpl implements PokemonRepository {
-  // private client: PokemonClient;
-
-  // constructor() {
-  //   this.client = new PokemonClient();
-  // }
-
   async getById(condition: PokemonGetByIdCondition): Promise<PokemonRepositoryDto> {
-    // 現状bunはaxiosが使えない
-    // try {
-    //   const result = await this.client
-    //     .getPokemonById(condition.id.toNumber())
-    //   console.log(result.name);
-
-    //   return { pokemon: convertResult(result) };
-    // } catch (e) {
-    //   throw new Error(e);
-    // }
     const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${condition.id.toNumber()}`);
     const result = await response.json();
     return { pokemon: convertResult(result) };
