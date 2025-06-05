@@ -11,7 +11,8 @@
     ],
     "types": [
       "@cloudflare/workers-types",
-      "reflect-metadata"
+      "reflect-metadata",
+      "bun-types",
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
