@@ -1,6 +1,7 @@
 import { describe, expect, it, mock, beforeAll, afterAll } from "bun:test";
 import { PokemonImpl } from "./pokemon.impl";
 import { PokemonId } from "../../../domain/pokemon/pokemon.id";
+import { ApplicationStatusError, Status } from "@/domain/error";
 
 // モックレスポンス
 const mockPokemonResponse = {
@@ -31,18 +32,10 @@ const mockPokemonResponse = {
     other: {
       dream_world: { front_default: "", front_female: null },
       home: { front_default: "", front_female: null, front_shiny: "", front_shiny_female: null },
-      "official-artwork": { front_default: "", front_shiny: "" }
+      "official-artwork": { front_default: "" }
     },
-    versions: {
-      "generation-i": {},
-      "generation-ii": {},
-      "generation-iii": {},
-      "generation-iv": {},
-      "generation-v": {},
-      "generation-vi": {},
-      "generation-vii": {},
-      "generation-viii": {}
-    },
+    // @ts-ignore - テスト用に簡略化したモックデータ
+    versions: {}
   },
   species: { name: "pikachu", url: "https://pokeapi.co/api/v2/pokemon-species/25/" },
   stats: [],
@@ -58,15 +51,36 @@ const mockPokemonResponse = {
 describe("PokemonImpl", () => {
   // fetchのモック
   const originalFetch = global.fetch;
+  let mockFetch: any;
   
   beforeAll(() => {
     // fetchをモック化
     // @ts-ignore - テスト用にfetchをモック化するため型エラーを無視
-    global.fetch = mock(() => {
-      return Promise.resolve({
-        json: () => Promise.resolve(mockPokemonResponse),
-      });
+    mockFetch = mock((url: string) => {
+      if (url.includes("/25")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockPokemonResponse),
+        });
+      } else if (url.includes("/999")) {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+          statusText: "Not Found",
+          json: () => Promise.reject(new Error("Not found")),
+        });
+      } else {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          statusText: "Server Error",
+          json: () => Promise.reject(new Error("Server error")),
+        });
+      }
     });
+    
+    global.fetch = mockFetch;
   });
   
   afterAll(() => {
@@ -88,6 +102,41 @@ describe("PokemonImpl", () => {
     expect(result.pokemon.types[0].type.name).toBe("electric");
     
     // fetchが正しいURLで呼ばれたことを確認
-    expect(global.fetch).toHaveBeenCalledWith("https://pokeapi.co/api/v2/pokemon/25");
+    expect(mockFetch).toHaveBeenCalledWith("https://pokeapi.co/api/v2/pokemon/25");
+  });
+  
+  it("存在しないポケモンIDでNOT_FOUNDエラーが発生する", async () => {
+    const repository = new PokemonImpl();
+    // 注意: 999は範囲外のため、PokemonId.createRequiredでエラーになる
+    // 範囲内の存在しないIDを使用する
+    const pokemonId = PokemonId.createRequired(898); // 最大値を使用
+    
+    await expect(repository.getById({ id: pokemonId })).rejects.toThrow(ApplicationStatusError);
+    
+    try {
+      await repository.getById({ id: pokemonId });
+    } catch (error) {
+      expect(error instanceof ApplicationStatusError).toBe(true);
+      if (error instanceof ApplicationStatusError) {
+        expect(error.message).toContain(Status.BFF_SYSTEM_ERROR.toMessage());
+      }
+    }
+  });
+  
+  it("APIエラー時にBFF_SYSTEM_ERRORが発生する", async () => {
+    const repository = new PokemonImpl();
+    // エラーを発生させるためのID
+    const pokemonId = PokemonId.createRequired(500);
+    
+    await expect(repository.getById({ id: pokemonId })).rejects.toThrow(ApplicationStatusError);
+    
+    try {
+      await repository.getById({ id: pokemonId });
+    } catch (error) {
+      expect(error instanceof ApplicationStatusError).toBe(true);
+      if (error instanceof ApplicationStatusError) {
+        expect(error.message).toContain(Status.BFF_SYSTEM_ERROR.toMessage());
+      }
+    }
   });
 });

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "extends": [],
   "files": { "ignoreUnknown": true },
   "organizeImports": {
@@ -35,6 +35,7 @@
     }
   },
   "linter": {
+    "enabled": true,
     "ignore": [],
     "rules": {
       "a11y": {
@@ -56,6 +57,7 @@
       },
       "complexity": {
         "noBannedTypes": "warn",
+        "noExcessiveCognitiveComplexity": "warn",
         "noExtraBooleanCast": "error",
         "noForEach": "warn",
         "noMultipleSpacesInRegularExpressionLiterals": "error",
@@ -63,6 +65,7 @@
         "noUselessConstructor": "error",
         "noUselessRename": "error",
         "noUselessSwitchCase": "error",
+        "useArrowFunction": "warn",
         "useLiteralKeys": "error",
         "useOptionalChain": "error",
         "useSimplifiedLogicExpression": "error"
@@ -71,6 +74,7 @@
         "noChildrenProp": "error",
         "noConstAssign": "error",
         "noConstantCondition": "error",
+        "noEmptyCharacterClassInRegex": "error",
         "noEmptyPattern": "error",
         "noPrecisionLoss": "error",
         "noRenderReturnValue": "error",
@@ -84,6 +88,8 @@
         "noUnusedVariables": "warn",
         "noVoidElementsWithChildren": "error",
         "noVoidTypeReturn": "error",
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error",
         "useIsNan": "error",
         "useValidForDirection": "error"
       },
@@ -99,12 +105,16 @@
         "noNonNullAssertion": "warn",
         "noParameterAssign": "error",
         "noUnusedTemplateLiteral": "error",
+        "noUselessElse": "warn",
         "noVar": "error",
+        "useCollapsedElseIf": "warn",
+        "useImportType": "error",
         "useConst": "error",
         "useExponentiationOperator": "error",
         "useNamingConvention": "off",
         "useSelfClosingElements": "error",
         "useShorthandArrayType": "error",
+        "useShorthandAssign": "error",
         "useTemplate": "error"
       },
       "suspicious": {
@@ -115,7 +125,6 @@
         "noClassAssign": "error",
         "noCommentText": "error",
         "noCompareNegZero": "error",
-        "noConsoleLog": "warn",
         "noDoubleEquals": "error",
         "noDuplicateCase": "error",
         "noDuplicateClassMembers": "error",
@@ -126,6 +135,8 @@
         "noExplicitAny": "warn",
         "noExtraNonNullAssertion": "error",
         "noFunctionAssign": "error",
+        "noGlobalIsFinite": "error",
+        "noGlobalIsNan": "error",
         "noImportAssign": "error",
         "noPrototypeBuiltins": "error",
         "noRedeclare": "error",
@@ -135,23 +146,10 @@
         "noUnsafeDeclarationMerging": "error",
         "useDefaultSwitchClauseLast": "error",
         "useGetterReturn": "error",
+        "useIsArray": "error",
         "useValidTypeof": "error"
       },
-      "nursery": {
-        "noDuplicateJsonKeys": "error",
-        "noEmptyCharacterClassInRegex": "error",
-        "noExcessiveComplexity": "warn",
-        "noGlobalIsFinite": "error",
-        "noGlobalIsNan": "error",
-        "noUselessElse": "warn",
-        "useArrowFunction": "warn",
-        "useCollapsedElseIf": "warn",
-        "useExhaustiveDependencies": "warn",
-        "useGroupedTypeImport": "error",
-        "useHookAtTopLevel": "error",
-        "useIsArray": "error",
-        "useShorthandAssign": "error"
-      }
+      "nursery": {}
     }
   }
 }

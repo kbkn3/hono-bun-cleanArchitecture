@@ -5,13 +5,42 @@ import {
   PokemonRepositoryDto,
 } from "@/application/repositories/pokemon/pokemon.model";
 import { injectable } from "inversify";
+import { ApplicationStatusError, Status } from "@/domain/error";
 
 @injectable()
 export class PokemonImpl implements PokemonRepository {
   async getById(condition: PokemonGetByIdCondition): Promise<PokemonRepositoryDto> {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${condition.id.toNumber()}`);
-    const result = await response.json();
-    return { pokemon: convertResult(result) };
+    try {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${condition.id.toNumber()}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new ApplicationStatusError(
+            `Pokemon with ID ${condition.id.toNumber()} not found`,
+            Status.NOT_FOUND
+          );
+        }
+        throw new ApplicationStatusError(
+          `Failed to fetch Pokemon data: ${response.statusText}`,
+          Status.BFF_SYSTEM_ERROR
+        );
+      }
+      
+      const result = await response.json();
+      return { pokemon: convertResult(result) };
+    } catch (error) {
+      // ApplicationStatusErrorはそのまま再スロー
+      if (error instanceof ApplicationStatusError) {
+        throw error;
+      }
+      
+      // その他のエラーはBFF_SYSTEM_ERRORとして包む
+      console.error("Error fetching Pokemon data:", error);
+      throw new ApplicationStatusError(
+        `Error fetching Pokemon data: ${error instanceof Error ? error.message : String(error)}`,
+        Status.BFF_SYSTEM_ERROR
+      );
+    }
   }
 }
 
