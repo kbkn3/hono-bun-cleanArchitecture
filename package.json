@@ -1,15 +1,25 @@
 {
   "scripts": {
     "dev": "wrangler dev src/index.ts",
+    "dev:node": "tsx --tsconfig=tsconfig.node.json watch src/index.node.ts",
+    "start:node": "tsx --tsconfig=tsconfig.node.json src/index.node.ts",
+    "build:node": "tsc -p tsconfig.node.json && tsc-alias -p tsconfig.node.json",
     "deploy": "wrangler deploy --minify src/index.ts",
     "lint": "biome lint ./src",
     "format": "biome format ./src",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "typecheck": "tsc --noEmit --skipLibCheck"
+    "typecheck": "tsc --noEmit --skipLibCheck",
+    "typecheck:node": "tsc -p tsconfig.node.json --noEmit",
+    "docker:build": "docker build -t hono-node-app .",
+    "docker:build:bun": "docker build -t hono-bun-app -f Dockerfile.bun .",
+    "docker:run": "docker run -p 3000:3000 hono-node-app",
+    "docker:run:bun": "docker run -p 3000:3000 hono-bun-app",
+    "docker:compose": "docker-compose up"
   },
   "dependencies": {
+    "@hono/node-server": "^1.11.1",
     "axios": "^1.6.7",
     "axios-cache-interceptor": "^1.5.1",
     "hono": "^4.0.9",
@@ -19,9 +29,13 @@
     "typescript": "^5.4.2"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.15",
     "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20240208.0",
+    "@types/bun": "^1.2.15",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.5",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.7.1",
     "wrangler": "^3.25.0"
   }
 }

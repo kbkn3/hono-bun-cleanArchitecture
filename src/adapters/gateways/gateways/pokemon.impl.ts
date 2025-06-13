@@ -1,4 +1,4 @@
-import { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
+import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
 import {
   Pokemon,
   PokemonGetByIdCondition,

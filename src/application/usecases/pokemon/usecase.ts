@@ -5,6 +5,8 @@ export interface PokemonIdInputPort {
   handle(input: PokemonIdInputUseCaseDto): Promise<PokemonIdOutputUseCaseDto>;
 }
 
+export type { PokemonIdInputPort as PokemonIdInputPortType };
+
 export interface PokemonIdInputUseCaseDto {
   /** 図鑑番号 */
   pokemonId: PokemonId;
@@ -54,4 +56,4 @@ export class PokemonIdOutputUseCaseDto {
       /** Data describing a Pokemon's types in a previous generation. */
       readonly past_types: PokemonPastType[],
   ) {}
-  }
+}

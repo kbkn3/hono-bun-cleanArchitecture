@@ -6,8 +6,8 @@ import {
   USECASE_BINDINGS,
 } from "./keys";
 import { PokemonController } from "./adapters/ui/routes/pokemon/pokemon.controller";
-import { PokemonIdInputPort } from "@/application/usecases/pokemon/usecase";
-import { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
+import type { PokemonIdInputPort } from "@/application/usecases/pokemon/usecase";
+import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
 import { PokemonImpl } from "@/adapters/gateways/gateways/pokemon.impl";
 import { PokemonIdUseCase } from "@/application/usecases/pokemon/usecase.impl";
 

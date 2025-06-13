@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import { Context } from "hono";
 import { BaseController } from "../base.controller";
 import { USECASE_BINDINGS } from "@/keys";
-import { PokemonIdInputPort } from "@/application/usecases/pokemon/usecase";
+import type { PokemonIdInputPort } from "@/application/usecases/pokemon/usecase";
 import { PokemonId } from "@/domain/pokemon/pokemon.id";
 import { PokemonPresenter } from "@/adapters/ui/routes/pokemon/presenter";
 

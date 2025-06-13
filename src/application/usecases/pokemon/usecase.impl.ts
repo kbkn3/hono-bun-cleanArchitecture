@@ -1,13 +1,13 @@
 import { injectable, inject } from "inversify";
 
-import {
+import type {
   PokemonIdInputPort,
   PokemonIdInputUseCaseDto,
-  PokemonIdOutputUseCaseDto,
 } from "@/application/usecases/pokemon/usecase";
+import { PokemonIdOutputUseCaseDto } from "@/application/usecases/pokemon/usecase";
 
 import { REPOSITORY_BINDINGS } from '@/keys';
-import { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
+import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
 
 @injectable()
 export class PokemonIdUseCase implements PokemonIdInputPort {
