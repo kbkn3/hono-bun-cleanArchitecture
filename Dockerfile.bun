@@ -1,0 +1,43 @@
+# Bun optimized Dockerfile
+# Build argument for debug mode (use --build-arg DEBUG=true for full image)
+ARG DEBUG=false
+
+# Build stage
+FROM oven/bun:latest AS build
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lock ./
+
+# Install production dependencies
+RUN bun install --production
+
+# Runtime stage - use distroless for production or full image for debug
+FROM oven/bun:distroless AS runtime-prod
+FROM oven/bun:latest AS runtime-debug
+
+# Select runtime based on DEBUG arg
+FROM runtime-${DEBUG:+debug}${DEBUG:-prod} AS runtime
+
+WORKDIR /app
+
+# Copy node_modules from build stage
+COPY --from=build --chown=nonroot:nonroot /app/node_modules /app/node_modules
+
+# Copy application files
+COPY --chown=nonroot:nonroot tsconfig.json ./
+COPY --chown=nonroot:nonroot src ./src
+
+# Run as non-root user
+USER nonroot
+
+# Expose port
+EXPOSE 3000
+
+# Environment variables
+ENV PORT=3000
+ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+
+# Note: TypeScript interfaces must use 'import type' for Bun compatibility
+CMD ["run", "src/index.ts"]

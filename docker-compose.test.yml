@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Node.js version for testing
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/hello"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # K6 test runner
+  k6:
+    image: grafana/k6:latest
+    depends_on:
+      app-test:
+        condition: service_healthy
+    volumes:
+      - ./:/scripts
+    environment:
+      - BASE_URL=http://app-test:3000
+    command: run /scripts/k6-test.js
