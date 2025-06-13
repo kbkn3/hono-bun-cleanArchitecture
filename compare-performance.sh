@@ -150,10 +150,10 @@ echo "4) Stress Test (16 minutes, up to 200 VUs)"
 read -p "Enter your choice (1-4): " k6_test
 
 case $k6_test in
-    1) K6_SCRIPT="k6-smoke-test.js" ;;
-    2) K6_SCRIPT="k6-simple-test.js" ;;
-    3) K6_SCRIPT="k6-test.js" ;;
-    4) K6_SCRIPT="k6-stress-test.js" ;;
+    1) K6_SCRIPT="k6-tests/k6-smoke-test.js" ;;
+    2) K6_SCRIPT="k6-tests/k6-simple-test.js" ;;
+    3) K6_SCRIPT="k6-tests/k6-test.js" ;;
+    4) K6_SCRIPT="k6-tests/k6-stress-test.js" ;;
     *)
         echo -e "${RED}Invalid choice${NC}"
         exit 1
@@ -183,12 +183,12 @@ echo ""
 echo -e "${BLUE}=== Performance Comparison Results ===${NC}"
 echo ""
 echo -e "${YELLOW}Node.js Results:${NC}"
-node analyze-k6-results.js "$RESULTS_DIR/node_${TIMESTAMP}.json"
+node k6-tests/analyze-k6-results.js "$RESULTS_DIR/node_${TIMESTAMP}.json"
 
 if [ -f "$RESULTS_DIR/bun_${TIMESTAMP}.json" ]; then
     echo ""
     echo -e "${YELLOW}Bun Results:${NC}"
-    node analyze-k6-results.js "$RESULTS_DIR/bun_${TIMESTAMP}.json"
+    node k6-tests/analyze-k6-results.js "$RESULTS_DIR/bun_${TIMESTAMP}.json"
 fi
 
 echo ""

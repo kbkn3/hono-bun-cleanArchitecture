@@ -133,88 +133,32 @@ The application will be available at `http://localhost:3000`.
 
 This project includes K6 load testing scripts to measure performance.
 
-### Installation
+📁 **See the [K6 Tests documentation](./k6-tests/README.md) for complete testing guide and detailed information.**
 
-```bash
-brew install k6
-```
+### Quick Start
 
-### Available Tests
-
-1. **Smoke Test** - Basic functionality check
-
+1. **Install K6**:
    ```bash
-   k6 run k6-smoke-test.js
+   brew install k6  # macOS
    ```
 
-2. **Simple Load Test** - 5 concurrent users for 30 seconds
-
+2. **Run automated comparison**:
    ```bash
-   k6 run k6-simple-test.js
+   ./compare-performance.sh
    ```
 
-3. **Full Load Test** - Gradual ramp up to 10 users over 2 minutes
+### Test Types Available
 
-   ```bash
-   k6 run k6-test.js
-   ```
+- **Smoke Test** - Basic functionality validation
+- **Simple Load Test** - 5 concurrent users for 30 seconds  
+- **Full Load Test** - Gradual ramp up to 10 users over 2 minutes
+- **Stress Test** - High load test up to 200 users
 
-4. **Stress Test** - High load test up to 200 users
+### Performance Results Summary
 
-   ```bash
-   k6 run k6-stress-test.js
-   ```
-
-### Running Tests with Docker
-
-```bash
-# Start the server
-docker run -d -p 3000:3000 --name test-server hono-bun-app
-
-# Run K6 test
-k6 run k6-simple-test.js
-
-# Save results to JSON
-k6 run --out json=results.json k6-simple-test.js
-
-# Analyze results
-node analyze-k6-results.js results.json
-```
-
-### Automated Performance Comparison
-
-Use the included script to compare Node.js and Bun performance:
-
-```bash
-./compare-performance.sh
-```
-
-This script will:
-
-- Start both Node.js and Bun servers
-- Run K6 tests against both
-- Save results with timestamps
-- Display a comparison
-
-### Performance Results
-
-Typical performance metrics with 5 concurrent users for 30 seconds:
-
-#### Node.js (Docker)
-
-- **Average Response Time**: ~25ms
-- **95th Percentile**: ~65ms
-- **Throughput**: ~200 requests/second
-- **Total Requests**: ~6,000
-
-#### Bun (Local)
-
-- **Average Response Time**: ~15ms
-- **95th Percentile**: ~32ms
-- **Throughput**: ~334 requests/second
-- **Total Requests**: ~10,000
-
-**Performance Improvement with Bun**: ~40% faster response times and ~67% higher throughput
+Typical performance with Bun vs Node.js:
+- **~40% faster** response times with Bun
+- **~67% higher** throughput with Bun
 
 ## TypeScript Interface Resolution
 
