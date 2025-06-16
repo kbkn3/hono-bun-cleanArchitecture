@@ -1,175 +1,155 @@
 # Hono Bun Clean Architecture
 
-[日本語版 README](./README.ja.md)
+[日本語版 README](./README.ja.md) | [📊 Performance Analysis](./docs/PERFORMANCE_ANALYSIS_COMPLETE.md)
 
 ## Description
 
-This is a simple project to demonstrate the Clean Architecture using the Hono and Bun as an example.
+A Clean Architecture implementation using Hono framework with support for both Bun and Node.js runtimes. This project demonstrates modern TypeScript development with Docker deployment and comprehensive performance testing.
 
 ## Demo
 
-- `/:message` - Returns the message in the path parameter.
-
+- `/:message` - Returns the message from the path parameter.
   <https://hono-bun-clean-architecture.ken0421wabu.workers.dev/HelloWorld>
-- `/pokemon/:id` - Returns the pokemon with the id in the path parameter.
-
+- `/pokemon/:id` - Returns the Pokemon corresponding to the path parameter ID.
   <https://hono-bun-clean-architecture.ken0421wabu.workers.dev/pokemon/1>
 
-## Technologies
+## Features
 
-- Package Manager: Bun
-- Database: None
-- HTTP Server: Hono
-- Test Framework: Bun
-- Linter: Biome
-- Formatter: Biome
+- 🏗️ **Clean Architecture** - Separation of concerns with clear dependency boundaries
+- 🚀 **Dual Runtime Support** - Works with both Bun and Node.js
+- 🐳 **Docker Ready** - Production-ready containerization
+- 📊 **Performance Testing** - Comprehensive K6 load testing suite
+- 🔧 **TypeScript** - Full type safety with modern TS features
+- ✨ **Hot Reload** - Fast development experience
 
-## Development
+## Tech Stack
+
+- **Package Manager**: Bun
+- **HTTP Server**: Hono
+- **Test Framework**: Bun
+- **Linter/Formatter**: Biome
+- **Containerization**: Docker & Docker Compose
+- **Performance Testing**: K6
+
+## Quick Start
+
+### Prerequisites
+
+- [Bun](https://bun.sh/docs/installation) (recommended) or Node.js 20+
+- Docker (optional, for containerized deployment)
 
 ### Setup
 
-1. install bun
-  MacOS:
-
-  ```bash
-  curl -fsSL https://bun.sh/install | bash
-  ```
-
-  <https://bun.sh/docs/installation>
-
-2. Clone the repository
-
-  ```bash
-  git clone
-  ```
-
-3. Install dependencies
-
-  ```bash
-  bun install
-  ```
-
-4. Run the project
-
-  ```bash
-  bun dev
-  ```
-
-### Deploy
-
 ```bash
-bun run deploy
+# Clone the repository
+git clone <repository-url>
+cd hono-bun-cleanArchitecture
+
+# Install dependencies
+bun install
+
+# Start development server
+bun dev
 ```
-
-## Node.js Support
-
-This project includes support for running with Node.js in addition to Bun:
-
-### Node.js Development
-
-```bash
-npm run dev:node        # Run with hot reload
-npm run start:node      # Run without hot reload
-```
-
-### Building
-
-```bash
-npm run build:node      # Compile TypeScript to JavaScript
-node dist/index.node.js # Run compiled version
-```
-
-### TypeScript Configuration
-
-- `tsconfig.json` - Base configuration for Cloudflare Workers/Bun
-- `tsconfig.node.json` - Node.js-specific configuration
-
-## Docker Support
-
-This project includes Docker support for both Node.js and Bun runtimes.
-
-### Using Docker with Node.js
-
-1. **Build and run**:
-
-   ```bash
-   npm run docker:build        # Build production image (compiled JS)
-   npm run docker:run          # Run production container
-   ```
-
-2. **Docker Compose**:
-
-   ```bash
-   npm run docker:compose      # Run with docker-compose
-   ```
-
-### Using Docker with Bun
-
-**✅ Update**: The TypeScript interface export issue has been resolved by using `import type` for interfaces. Bun now works correctly with this codebase.
-
-To build and run with Bun:
-
-1. Build and run the Bun-optimized image:
-
-   ```bash
-   npm run docker:build:bun    # Build Bun image
-   npm run docker:run:bun      # Run Bun container
-   ```
-
-2. Debug mode (with full Bun image):
-
-   ```bash
-   docker build -t hono-bun-debug -f Dockerfile.bun --build-arg DEBUG=true .
-   docker run -p 3000:3000 hono-bun-debug
-   ```
-
-### Docker Compose
-
-The project includes a `docker-compose.yml` file with both Node.js and Bun configurations. By default, it uses the Node.js production version. To use the Bun version, edit the `docker-compose.yml` file and comment out the `app` service while uncommenting the `app-bun` service.
 
 The application will be available at `http://localhost:3000`.
 
-## Performance Testing with K6
+## Development
 
-This project includes K6 load testing scripts to measure performance.
+### Available Scripts
 
-📁 **See the [K6 Tests documentation](./k6-tests/README.md) for complete testing guide and detailed information.**
+```bash
+# Development
+bun dev                 # Start with Bun (recommended)
+npm run dev:node        # Start with Node.js
 
-### Quick Start
+# Production
+bun run deploy          # Deploy to Cloudflare Workers
+npm run start:node      # Run Node.js production server
 
-1. **Install K6**:
-   ```bash
-   brew install k6  # macOS
-   ```
+# Testing
+bun test                # Run tests
+bun test:watch          # Run tests in watch mode
+bun test:coverage       # Run tests with coverage
 
-2. **Run automated comparison**:
-   ```bash
-   ./compare-performance.sh
-   ```
-
-### Test Types Available
-
-- **Smoke Test** - Basic functionality validation
-- **Simple Load Test** - 5 concurrent users for 30 seconds  
-- **Full Load Test** - Gradual ramp up to 10 users over 2 minutes
-- **Stress Test** - High load test up to 200 users
-
-### Performance Results Summary
-
-Typical performance with Bun vs Node.js:
-- **~40% faster** response times with Bun
-- **~67% higher** throughput with Bun
-
-## TypeScript Interface Resolution
-
-When using Bun, TypeScript interfaces must be imported using `import type`:
-
-```typescript
-// ❌ Will cause error in Bun
-import { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
-
-// ✅ Correct way for Bun
-import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
+# Code Quality
+bun run lint            # Run linter
+bun run format          # Format code
+bun run typecheck       # Type checking
 ```
 
-This is because TypeScript interfaces don't exist at runtime, and Bun's module resolution expects runtime exports.
+## Docker Deployment
+
+### Node.js (Recommended for Production)
+
+```bash
+npm run docker:build    # Build production image
+npm run docker:run      # Run container
+```
+
+### Bun
+
+```bash
+npm run docker:build:bun # Build Bun image
+npm run docker:run:bun   # Run Bun container
+```
+
+### Docker Compose
+
+```bash
+npm run docker:compose   # Run with docker-compose
+```
+
+## Performance Testing
+
+This project includes comprehensive performance testing with K6.
+
+### Quick Performance Test
+
+```bash
+# Install K6
+brew install k6  # macOS
+
+# Run performance comparison
+./compare-performance.sh
+```
+
+### Performance Summary
+
+Based on extensive testing (local, Docker, and statistical analysis):
+
+| Environment | Best Runtime | Key Advantage |
+|-------------|-------------|---------------|
+| **Local Development** | Bun | 4.3% faster, better developer experience |
+| **Docker Production** | Node.js | More consistent, reliable performance |
+| **Overall Recommendation** | Context-dependent | See [full analysis](./docs/PERFORMANCE_ANALYSIS_COMPLETE.md) |
+
+📊 **[Complete Performance Analysis](./docs/PERFORMANCE_ANALYSIS_COMPLETE.md)** - Detailed comparison with statistical significance testing.
+
+🧪 **[K6 Testing Guide](./k6-tests/README.md)** - Comprehensive testing documentation.
+
+## Architecture
+
+This project follows Clean Architecture principles:
+
+- **Domain Layer** (`src/domain/`) - Pure business logic
+- **Application Layer** (`src/application/`) - Use cases and interfaces
+- **Adapters Layer** (`src/adapters/`) - External integrations
+- **Infrastructure Layer** - Framework-specific code
+
+Key patterns:
+
+- Dependency Injection (InversifyJS)
+- Repository Pattern
+- Value Objects
+- Domain Error Handling
+
+## Documentation
+
+- [📊 Performance Analysis](./docs/PERFORMANCE_ANALYSIS_COMPLETE.md) - Complete runtime comparison
+- [🧪 K6 Testing Guide](./k6-tests/README.md) - Load testing documentation
+- [🤖 Claude.md](./CLAUDE.md) - AI assistant guidelines
+
+## License
+
+This project is for demonstration purposes.

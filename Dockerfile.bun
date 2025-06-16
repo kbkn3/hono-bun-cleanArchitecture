@@ -17,8 +17,8 @@ RUN bun install --production
 FROM oven/bun:distroless AS runtime-prod
 FROM oven/bun:latest AS runtime-debug
 
-# Select runtime based on DEBUG arg
-FROM runtime-${DEBUG:+debug}${DEBUG:-prod} AS runtime
+# Select runtime based on DEBUG arg - use conditional copy approach instead
+FROM oven/bun:distroless AS runtime
 
 WORKDIR /app
 

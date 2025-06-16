@@ -1,176 +1,162 @@
 # Hono Bun クリーンアーキテクチャ
 
+[📊 パフォーマンス分析](./docs/PERFORMANCE_ANALYSIS_COMPLETE.ja.md)
+
 ## 説明
 
-このプロジェクトは、HonoとBunを使用したクリーンアーキテクチャの実装例です。
+HonoフレームワークとBunおよびNode.jsランタイムの両方をサポートするクリーンアーキテクチャの実装です。このプロジェクトは、Dockerデプロイメントと包括的なパフォーマンステストを備えたモダンなTypeScript開発を実証しています。
 
 ## デモ
 
 - `/:message` - パスパラメータのメッセージを返します。
-
   <https://hono-bun-clean-architecture.ken0421wabu.workers.dev/HelloWorld>
 - `/pokemon/:id` - パスパラメータのIDに対応するポケモンを返します。
-
   <https://hono-bun-clean-architecture.ken0421wabu.workers.dev/pokemon/1>
+
+## 機能
+
+- 🏗️ **クリーンアーキテクチャ** - 明確な依存関係の境界を持つ関心の分離
+- 🚀 **デュアルランタイムサポート** - BunとNode.jsの両方で動作
+- 🐳 **Docker対応** - 本番対応のコンテナ化
+- 📊 **パフォーマンステスト** - 包括的なK6負荷テストスイート
+- 🔧 **TypeScript** - モダンなTS機能による完全な型安全性
+- ✨ **ホットリロード** - 高速な開発体験
 
 ## 技術スタック
 
-- パッケージマネージャー: Bun
-- データベース: なし
-- HTTPサーバー: Hono
-- テストフレームワーク: Bun
-- リンター: Biome
-- フォーマッター: Biome
+- **パッケージマネージャー**: Bun
+- **HTTPサーバー**: Hono
+- **テストフレームワーク**: Bun
+- **リンター/フォーマッター**: Biome
+- **コンテナ化**: Docker & Docker Compose
+- **パフォーマンステスト**: K6
 
-## 開発
+## クイックスタート
+
+### 前提条件
+
+- [Bun](https://bun.sh/docs/installation)（推奨）またはNode.js 20+
+- Docker（コンテナ化デプロイメント用、オプション）
 
 ### セットアップ
 
-1. Bunのインストール
-  MacOS:
-
-  ```bash
-  curl -fsSL https://bun.sh/install | bash
-  ```
-
-  <https://bun.sh/docs/installation>
-
-2. リポジトリのクローン
-
-  ```bash
-  git clone
-  ```
-
-3. 依存関係のインストール
-
-  ```bash
-  bun install
-  ```
-
-4. プロジェクトの実行
-
-  ```bash
-  bun dev
-  ```
-
-### デプロイ
-
 ```bash
-bun run deploy
+# リポジトリのクローン
+git clone <repository-url>
+cd hono-bun-cleanArchitecture
+
+# 依存関係のインストール
+bun install
+
+# 開発サーバーの起動
+bun dev
 ```
 
-## Node.jsサポート
+アプリケーションは`http://localhost:3000`で利用できます。
 
-このプロジェクトはBunに加えてNode.jsでの実行もサポートしています：
+## 開発
 
-### Node.js開発
-
-```bash
-npm run dev:node        # ホットリロード付きで実行
-npm run start:node      # ホットリロードなしで実行
-```
-
-### ビルド
+### 利用可能なスクリプト
 
 ```bash
-npm run build:node      # TypeScriptをJavaScriptにコンパイル
-node dist/index.node.js # コンパイル済みバージョンを実行
+# 開発
+bun dev                 # Bunで開始（推奨）
+npm run dev:node        # Node.jsで開始
+
+# 本番
+bun run deploy          # Cloudflare Workersにデプロイ
+npm run start:node      # Node.js本番サーバーの実行
+
+# テスト
+bun test                # テスト実行
+bun test:watch          # ウォッチモードでテスト実行
+bun test:coverage       # カバレッジ付きテスト実行
+
+# コード品質
+bun run lint            # リンターの実行
+bun run format          # コードフォーマット
+bun run typecheck       # 型チェック
 ```
 
-### TypeScript設定
+## Dockerデプロイメント
 
-- `tsconfig.json` - Cloudflare Workers/Bun用のベース設定
-- `tsconfig.node.json` - Node.js専用設定
+### Node.js（本番環境推奨）
 
-## Dockerサポート
+```bash
+npm run docker:build    # 本番イメージのビルド
+npm run docker:run      # コンテナの実行
+```
 
-このプロジェクトはNode.jsとBun両方のランタイムに対応したDockerサポートを含んでいます。
+### Bun
 
-### Node.jsでのDocker使用
-
-1. **ビルドと実行**:
-
-   ```bash
-   npm run docker:build        # 本番イメージをビルド（コンパイル済みJS）
-   npm run docker:run          # 本番コンテナを実行
-   ```
-
-2. **Docker Compose**:
-
-   ```bash
-   npm run docker:compose      # docker-composeで実行
-   ```
-
-### BunでのDocker使用
-
-**✅ 更新**: TypeScriptインターフェースのエクスポート問題は、インターフェースに`import type`を使用することで解決されました。Bunはこのコードベースで正しく動作するようになりました。
-
-Bunでビルドと実行：
-
-1. Bun最適化イメージのビルドと実行：
-
-   ```bash
-   npm run docker:build:bun    # Bunイメージをビルド
-   npm run docker:run:bun      # Bunコンテナを実行
-   ```
-
-2. デバッグモード（完全なBunイメージ使用）：
-
-   ```bash
-   docker build -t hono-bun-debug -f Dockerfile.bun --build-arg DEBUG=true .
-   docker run -p 3000:3000 hono-bun-debug
-   ```
+```bash
+npm run docker:build:bun # Bunイメージのビルド
+npm run docker:run:bun   # Bunコンテナの実行
+```
 
 ### Docker Compose
 
-プロジェクトにはNode.jsとBun両方の設定を含む`docker-compose.yml`ファイルが含まれています。デフォルトではNode.js本番バージョンを使用します。Bunバージョンを使用するには、`docker-compose.yml`ファイルを編集し、`app`サービスをコメントアウトして`app-bun`サービスのコメントを外してください。
-
-アプリケーションは`http://localhost:3000`でアクセスできます。
-
-## K6を使用したパフォーマンステスト
-
-このプロジェクトには、パフォーマンス測定用のK6負荷テストスクリプトが含まれています。
-
-📁 **完全なテストガイドと詳細情報については、[K6テストドキュメント](./k6-tests/README.md)をご覧ください。**
-
-### クイックスタート
-
-1. **K6をインストール**：
-
-   ```bash
-   brew install k6  # macOS
-   ```
-
-2. **自動比較を実行**：
-
-   ```bash
-   ./compare-performance.sh
-   ```
-
-### 利用可能なテストタイプ
-
-- **スモークテスト** - 基本機能検証
-- **シンプル負荷テスト** - 30秒間で5並行ユーザー
-- **フル負荷テスト** - 2分間で10ユーザーまで段階的に増加
-- **ストレステスト** - 最大200ユーザーまでの高負荷テスト
-
-### パフォーマンス結果サマリー
-
-BunとNode.jsの典型的なパフォーマンス比較：
-
-- Bunで応答時間が**約40%高速**
-- Bunでスループットが**約67%向上**
-
-## TypeScriptインターフェース解決
-
-Bunを使用する際は、TypeScriptインターフェースは`import type`を使用してインポートする必要があります：
-
-```typescript
-// ❌ Bunでエラーになります
-import { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
-
-// ✅ Bunでの正しい方法
-import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
+```bash
+npm run docker:compose   # docker-composeで実行
 ```
 
-これは、TypeScriptインターフェースが実行時に存在せず、Bunのモジュール解決が実行時のエクスポートを期待するためです。
+## パフォーマンステスト
+
+このプロジェクトには、K6による包括的なパフォーマンステストが含まれています。
+
+### クイックパフォーマンステスト
+
+```bash
+# K6のインストール
+brew install k6  # macOS
+
+# パフォーマンス比較の実行
+./compare-performance.sh
+```
+
+### パフォーマンスサマリー
+
+広範囲なテスト（ローカル、Docker、統計分析）に基づく結果：
+
+| 環境 | 最適ランタイム | 主要な利点 |
+|------|---------------|-----------|
+| **ローカル開発** | Bun | 4.3%高速、より良い開発者体験 |
+| **Docker本番** | Node.js | より一貫性があり信頼性の高い性能 |
+| **総合推奨** | 文脈依存 | [完全分析](./docs/PERFORMANCE_ANALYSIS_COMPLETE.ja.md)を参照 |
+
+📊 **[完全パフォーマンス分析](./docs/PERFORMANCE_ANALYSIS_COMPLETE.ja.md)** - 統計的有意性テストを含む詳細比較。
+
+🧪 **[K6テストガイド](./k6-tests/README.ja.md)** - 包括的なテストドキュメント。
+
+## アーキテクチャ
+
+このプロジェクトはクリーンアーキテクチャの原則に従います：
+
+- **ドメイン層** (`src/domain/`) - 純粋なビジネスロジック
+- **アプリケーション層** (`src/application/`) - ユースケースとインターフェース
+- **アダプター層** (`src/adapters/`) - 外部統合
+- **インフラストラクチャ層** - フレームワーク固有のコード
+
+主要パターン：
+
+- 依存性注入（InversifyJS）
+- リポジトリパターン
+- 値オブジェクト
+- ドメインエラーハンドリング
+
+## 貢献
+
+1. リポジトリをフォーク
+2. 機能ブランチを作成
+3. テストとリンティングを実行
+4. プルリクエストを提出
+
+## ドキュメント
+
+- [📊 パフォーマンス分析](./docs/PERFORMANCE_ANALYSIS_COMPLETE.ja.md) - 完全なランタイム比較
+- [🧪 K6テストガイド](./k6-tests/README.ja.md) - 負荷テストドキュメント
+- [🤖 Claude.md](./CLAUDE.md) - AIアシスタントガイドライン
+
+## ライセンス
+
+このプロジェクトはデモンストレーション目的です。
