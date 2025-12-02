@@ -1,4 +1,5 @@
 name = "hono-bun-clean-architecture"
+main = "src/index.ts"
 compatibility_date = "2023-12-01"
 
 # [vars]
