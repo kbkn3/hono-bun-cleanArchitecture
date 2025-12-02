@@ -15,3 +15,7 @@ export const REPOSITORY_BINDINGS = {
 export const POKENODE_BINDINGS = {
   PokeNode: Symbol.for("poke.node")
 };
+
+export const INFRASTRUCTURE_BINDINGS = {
+  Logger: Symbol.for("logger")
+};

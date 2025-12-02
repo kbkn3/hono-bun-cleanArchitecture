@@ -1,6 +1,7 @@
-import { Context, MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import { ApplicationStatusError, Status } from "@/domain/error";
 import { StatusCode } from "@/domain/status.code";
+import type { ILogger } from "@/application/logger/logger";
 
 // エラーレスポンスの型定義
 export interface ErrorResponse {
@@ -10,16 +11,27 @@ export interface ErrorResponse {
 }
 
 /**
+ * エラーハンドリングミドルウェアのオプション
+ */
+export interface ErrorHandlerOptions {
+  logger: ILogger;
+}
+
+/**
  * エラーハンドリングミドルウェア
  * アプリケーション内で発生した例外を適切なHTTPレスポンスに変換する
+ * @param options - ミドルウェアオプション（loggerを含む）
  */
-export const errorHandler = (): MiddlewareHandler => {
+export const errorHandler = (options: ErrorHandlerOptions): MiddlewareHandler => {
+  const { logger } = options;
+
   return async (c: Context, next: () => Promise<void>) => {
     try {
       await next();
     } catch (error) {
-      console.error("Error caught by middleware:", error);
-      
+      // ILoggerを使用してエラーをログ出力
+      logError(logger, error);
+
       if (error instanceof ApplicationStatusError) {
         // アプリケーション固有のエラー処理
         return handleApplicationError(c, error);
@@ -32,27 +44,35 @@ export const errorHandler = (): MiddlewareHandler => {
 };
 
 /**
+ * エラーをスタックトレース付きでログ出力する
+ */
+function logError(logger: ILogger, error: unknown): void {
+  if (error instanceof Error) {
+    logger.error("Error caught by middleware", error, {
+      errorType: error.constructor.name,
+    });
+  } else {
+    logger.error("Error caught by middleware", undefined, {
+      type: typeof error,
+      value: String(error),
+    });
+  }
+}
+
+/**
  * アプリケーション固有のエラーを処理する
  */
 function handleApplicationError(c: Context, error: ApplicationStatusError): Response {
-  // エラーの種類に応じてステータスコードを決定
-  let statusCode = StatusCode.INTERNAL_SERVER_ERROR;
-  let errorMessage = "Internal server error";
-  
-  if (error.message.includes(Status.NOT_FOUND.toMessage())) {
-    statusCode = StatusCode.NOT_FOUND;
-    errorMessage = "Resource not found";
-  } else if (error.message.includes(Status.ILLEGAL_DATA.toMessage())) {
-    statusCode = StatusCode.BAD_REQUEST;
-    errorMessage = "Invalid request data";
-  }
-  
+  // statusプロパティを使用してステータスコードを決定
+  const statusCode = mapStatusToHttpCode(error.status);
+  const errorMessage = mapStatusToMessage(error.status);
+
   const responseBody: ErrorResponse = {
     status: "error",
     message: errorMessage,
     details: error.message
   };
-  
+
   return new Response(
     JSON.stringify(responseBody),
     {
@@ -62,6 +82,36 @@ function handleApplicationError(c: Context, error: ApplicationStatusError): Resp
       }
     }
   );
+}
+
+/**
+ * ドメインStatusをHTTPステータスコードにマッピング
+ */
+function mapStatusToHttpCode(status: Status): number {
+  switch (status) {
+    case Status.NOT_FOUND:
+      return StatusCode.NOT_FOUND;
+    case Status.ILLEGAL_DATA:
+      return StatusCode.BAD_REQUEST;
+    case Status.BFF_SYSTEM_ERROR:
+    default:
+      return StatusCode.INTERNAL_SERVER_ERROR;
+  }
+}
+
+/**
+ * ドメインStatusをエラーメッセージにマッピング
+ */
+function mapStatusToMessage(status: Status): string {
+  switch (status) {
+    case Status.NOT_FOUND:
+      return "Resource not found";
+    case Status.ILLEGAL_DATA:
+      return "Invalid request data";
+    case Status.BFF_SYSTEM_ERROR:
+    default:
+      return "Internal server error";
+  }
 }
 
 /**

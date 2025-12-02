@@ -14,7 +14,18 @@ describe("Error", () => {
   describe("ApplicationConfigurationError", () => {
     it("正しいエラーメッセージを生成する", () => {
       const error = new ApplicationConfigurationError("Missing env var");
-      expect(error.message).toBe("BFF Configuration Error Missing env var");
+      expect(error.message).toBe("BFF Configuration Error: Missing env var");
+    });
+
+    it("スタックトレースを保持する", () => {
+      const error = new ApplicationConfigurationError("Missing env var");
+      expect(error.stack).toBeDefined();
+      expect(error.stack).toContain("ApplicationConfigurationError");
+    });
+
+    it("正しいエラー名を持つ", () => {
+      const error = new ApplicationConfigurationError("Missing env var");
+      expect(error.name).toBe("ApplicationConfigurationError");
     });
   });
 
@@ -22,6 +33,22 @@ describe("Error", () => {
     it("正しいエラーメッセージを生成する", () => {
       const error = new ApplicationStatusError("Invalid data", Status.ILLEGAL_DATA);
       expect(error.message).toBe("BFF Application Status Error status: Illegal Data message: Invalid data");
+    });
+
+    it("statusプロパティを保持する", () => {
+      const error = new ApplicationStatusError("Invalid data", Status.ILLEGAL_DATA);
+      expect(error.status).toBe(Status.ILLEGAL_DATA);
+    });
+
+    it("スタックトレースを保持する", () => {
+      const error = new ApplicationStatusError("Invalid data", Status.ILLEGAL_DATA);
+      expect(error.stack).toBeDefined();
+      expect(error.stack).toContain("ApplicationStatusError");
+    });
+
+    it("正しいエラー名を持つ", () => {
+      const error = new ApplicationStatusError("Invalid data", Status.ILLEGAL_DATA);
+      expect(error.name).toBe("ApplicationStatusError");
     });
   });
 });
