@@ -1,6 +1,7 @@
-import { Context, MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 import { ApplicationStatusError, Status } from "@/domain/error";
 import { StatusCode } from "@/domain/status.code";
+import type { ILogger } from "@/application/logger/logger";
 
 // エラーレスポンスの型定義
 export interface ErrorResponse {
@@ -10,16 +11,26 @@ export interface ErrorResponse {
 }
 
 /**
+ * エラーハンドリングミドルウェアのオプション
+ */
+export interface ErrorHandlerOptions {
+  logger: ILogger;
+}
+
+/**
  * エラーハンドリングミドルウェア
  * アプリケーション内で発生した例外を適切なHTTPレスポンスに変換する
+ * @param options - ミドルウェアオプション（loggerを含む）
  */
-export const errorHandler = (): MiddlewareHandler => {
+export const errorHandler = (options: ErrorHandlerOptions): MiddlewareHandler => {
+  const { logger } = options;
+
   return async (c: Context, next: () => Promise<void>) => {
     try {
       await next();
     } catch (error) {
-      // スタックトレースを明示的に出力
-      logError(error);
+      // ILoggerを使用してエラーをログ出力
+      logError(logger, error);
 
       if (error instanceof ApplicationStatusError) {
         // アプリケーション固有のエラー処理
@@ -35,15 +46,13 @@ export const errorHandler = (): MiddlewareHandler => {
 /**
  * エラーをスタックトレース付きでログ出力する
  */
-function logError(error: unknown): void {
+function logError(logger: ILogger, error: unknown): void {
   if (error instanceof Error) {
-    console.error("Error caught by middleware:", {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
+    logger.error("Error caught by middleware", error, {
+      errorType: error.constructor.name,
     });
   } else {
-    console.error("Error caught by middleware:", {
+    logger.error("Error caught by middleware", undefined, {
       type: typeof error,
       value: String(error),
     });

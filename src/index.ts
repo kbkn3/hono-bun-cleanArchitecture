@@ -5,18 +5,21 @@ import { logger } from "hono/logger";
 import { createContainer } from "@/container";
 import { errorHandler } from "@/middleware/error-handler";
 import { detailedLogger } from "@/middleware/logger";
+import { INFRASTRUCTURE_BINDINGS } from "@/keys";
+import type { ILogger } from "@/application/logger/logger";
 
 export const customLogger = (message: string, ...rest: string[]) => {
   console.log(message, ...rest);
 };
 
 const container = createContainer();
+const appLogger = container.get<ILogger>(INFRASTRUCTURE_BINDINGS.Logger);
 
 const app = setUpRoutes(
   new Hono()
   .use(logger(customLogger))
   .use(detailedLogger())
-  .use(errorHandler()),
+  .use(errorHandler({ logger: appLogger })),
   container
 );
 
