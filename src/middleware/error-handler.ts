@@ -18,8 +18,9 @@ export const errorHandler = (): MiddlewareHandler => {
     try {
       await next();
     } catch (error) {
-      console.error("Error caught by middleware:", error);
-      
+      // スタックトレースを明示的に出力
+      logError(error);
+
       if (error instanceof ApplicationStatusError) {
         // アプリケーション固有のエラー処理
         return handleApplicationError(c, error);
@@ -32,27 +33,37 @@ export const errorHandler = (): MiddlewareHandler => {
 };
 
 /**
+ * エラーをスタックトレース付きでログ出力する
+ */
+function logError(error: unknown): void {
+  if (error instanceof Error) {
+    console.error("Error caught by middleware:", {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    });
+  } else {
+    console.error("Error caught by middleware:", {
+      type: typeof error,
+      value: String(error),
+    });
+  }
+}
+
+/**
  * アプリケーション固有のエラーを処理する
  */
 function handleApplicationError(c: Context, error: ApplicationStatusError): Response {
-  // エラーの種類に応じてステータスコードを決定
-  let statusCode = StatusCode.INTERNAL_SERVER_ERROR;
-  let errorMessage = "Internal server error";
-  
-  if (error.message.includes(Status.NOT_FOUND.toMessage())) {
-    statusCode = StatusCode.NOT_FOUND;
-    errorMessage = "Resource not found";
-  } else if (error.message.includes(Status.ILLEGAL_DATA.toMessage())) {
-    statusCode = StatusCode.BAD_REQUEST;
-    errorMessage = "Invalid request data";
-  }
-  
+  // statusプロパティを使用してステータスコードを決定
+  const statusCode = mapStatusToHttpCode(error.status);
+  const errorMessage = mapStatusToMessage(error.status);
+
   const responseBody: ErrorResponse = {
     status: "error",
     message: errorMessage,
     details: error.message
   };
-  
+
   return new Response(
     JSON.stringify(responseBody),
     {
@@ -62,6 +73,36 @@ function handleApplicationError(c: Context, error: ApplicationStatusError): Resp
       }
     }
   );
+}
+
+/**
+ * ドメインStatusをHTTPステータスコードにマッピング
+ */
+function mapStatusToHttpCode(status: Status): number {
+  switch (status) {
+    case Status.NOT_FOUND:
+      return StatusCode.NOT_FOUND;
+    case Status.ILLEGAL_DATA:
+      return StatusCode.BAD_REQUEST;
+    case Status.BFF_SYSTEM_ERROR:
+    default:
+      return StatusCode.INTERNAL_SERVER_ERROR;
+  }
+}
+
+/**
+ * ドメインStatusをエラーメッセージにマッピング
+ */
+function mapStatusToMessage(status: Status): string {
+  switch (status) {
+    case Status.NOT_FOUND:
+      return "Resource not found";
+    case Status.ILLEGAL_DATA:
+      return "Invalid request data";
+    case Status.BFF_SYSTEM_ERROR:
+    default:
+      return "Internal server error";
+  }
 }
 
 /**

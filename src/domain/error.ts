@@ -18,8 +18,13 @@ export class Status {
 }
 
 export abstract class ApplicationError extends Error {
-  protected constructor(_message: string, public override readonly stack?: string) {
-    super(_message);
+  protected constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    // スタックトレースを適切にキャプチャ（エラー発生箇所を正確に記録）
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
   }
 }
 
@@ -27,8 +32,8 @@ export abstract class ApplicationError extends Error {
  * 環境変数など起動時に必要な情報が設定されていない / The information required at startup, such as environment variables, is not set.
  */
 export class ApplicationConfigurationError extends ApplicationError {
-  public constructor(message: string, stack?: string) {
-    super(`BFF Configuration Error ${message}`, stack);
+  public constructor(message: string) {
+    super(`BFF Configuration Error: ${message}`);
   }
 }
 
@@ -36,7 +41,10 @@ export class ApplicationConfigurationError extends ApplicationError {
  * 上流のシステムなどに異常があり、これ以上処理を継続できない / An abnormality exists in the upstream system, etc., and the process cannot be continued.
  */
 export class ApplicationStatusError extends ApplicationError {
-  public constructor(message: string, status: Status, stack?: string) {
-    super(`BFF Application Status Error status: ${status.toMessage()} message: ${message}`, stack);
+  public readonly status: Status;
+
+  public constructor(message: string, status: Status) {
+    super(`BFF Application Status Error status: ${status.toMessage()} message: ${message}`);
+    this.status = status;
   }
 }
