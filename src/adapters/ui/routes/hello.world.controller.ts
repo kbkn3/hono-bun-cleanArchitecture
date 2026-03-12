@@ -34,7 +34,7 @@ export class HelloWorldController implements BaseController {
   }
 
   private convertRequestToParams(c: Context): BodyParams {
-    const message = c.req.param('message');
+    const message = c.req.param('message') ?? '';
     return {
       message: message,
     };
