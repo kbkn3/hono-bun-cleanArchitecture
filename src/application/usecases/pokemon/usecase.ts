@@ -1,5 +1,5 @@
 import { PokemonId } from "@/domain/pokemon/pokemon.id";
-import { NamedAPIResource, PokemonAbility, PokemonHeldItem, PokemonMove, PokemonPastType, PokemonSprites, PokemonStat, PokemonType, VersionGameIndex } from "pokenode-ts";
+import type { NamedAPIResource, PokemonAbility, PokemonHeldItem, PokemonMove, PokemonPastType, PokemonSprites, PokemonStat, PokemonType, VersionGameIndex } from "pokenode-ts";
 
 export interface PokemonIdInputPort {
   handle(input: PokemonIdInputUseCaseDto): Promise<PokemonIdOutputUseCaseDto>;
