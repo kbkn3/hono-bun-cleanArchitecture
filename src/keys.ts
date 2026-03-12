@@ -1,4 +1,5 @@
 export const CONTROLLER_BINDINGS = {
+  Home: Symbol.for("home.controller"),
   HelloWorld: Symbol.for("hello.world.controller"),
   Pokemon: Symbol.for("pokemon.controller")
 };

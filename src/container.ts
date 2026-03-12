@@ -1,4 +1,5 @@
 import { Container } from "inversify";
+import { HomeController } from "@/adapters/ui/routes/home.controller";
 import { HelloWorldController } from "@/adapters/ui/routes/hello.world.controller";
 import {
   CONTROLLER_BINDINGS,
@@ -33,6 +34,9 @@ export function createContainer(): Container {
  * @param container - DIコンテナ
  */
 function bindControllers(container: Container): void {
+  container
+    .bind<HomeController>(CONTROLLER_BINDINGS.Home)
+    .to(HomeController);
   container
     .bind<HelloWorldController>(CONTROLLER_BINDINGS.HelloWorld)
     .to(HelloWorldController);

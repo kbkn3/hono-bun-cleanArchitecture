@@ -7,6 +7,12 @@ import { CONTROLLER_BINDINGS } from '@/keys';
 
 export const routings: Route[] = [
   {
+    name: 'home',
+    serviceName: CONTROLLER_BINDINGS.Home,
+    path: '/',
+    methods: ['get'],
+  },
+  {
     name: 'pokemon',
     serviceName: CONTROLLER_BINDINGS.Pokemon,
     path: '/pokemon/:id',
