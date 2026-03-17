@@ -3,11 +3,10 @@ import { PokemonIdOutputUseCaseDto } from "@/application/usecases/pokemon/usecas
 
 export class PokemonPresenter {
   handle(dto: PokemonIdOutputUseCaseDto): PokemonPresenterDto {
-    const types = dto.types.map((type) => type.type.name);
     return new PokemonPresenterDto({
       id: dto.id,
       name: dto.name,
-      types: types,
+      types: dto.types,
     });
   }
 }
