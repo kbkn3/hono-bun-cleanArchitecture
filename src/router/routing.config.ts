@@ -1,27 +1,29 @@
-/**
- * ルーティング定義の集約
- */
-import { Route } from '@/adapters/ui/routes/base.controller';
+import type { Route } from '@/router/route';
+import type { BaseController } from '@/adapters/ui/routes/base.controller';
 
-import { CONTROLLER_BINDINGS } from '@/keys';
-
-export const routings: Route[] = [
-  {
-    name: 'home',
-    serviceName: CONTROLLER_BINDINGS.Home,
-    path: '/',
-    methods: ['get'],
-  },
-  {
-    name: 'pokemon',
-    serviceName: CONTROLLER_BINDINGS.Pokemon,
-    path: '/pokemon/:id',
-    methods: ['get'],
-  },
-  {
-    name: 'hello.world',
-    serviceName: CONTROLLER_BINDINGS.HelloWorld,
-    path: '/:message',
-    methods: ['get'],
-  }
-];
+export function createRoutings(controllers: {
+  home: BaseController;
+  helloWorld: BaseController;
+  pokemon: BaseController;
+}): Route[] {
+  return [
+    {
+      name: 'home',
+      controller: controllers.home,
+      path: '/',
+      methods: ['get'],
+    },
+    {
+      name: 'pokemon',
+      controller: controllers.pokemon,
+      path: '/pokemon/:id',
+      methods: ['get'],
+    },
+    {
+      name: 'hello.world',
+      controller: controllers.helloWorld,
+      path: '/message/:message',
+      methods: ['get'],
+    }
+  ];
+}

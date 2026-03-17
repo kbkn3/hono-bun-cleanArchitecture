@@ -21,8 +21,6 @@
   "dependencies": {
     "@hono/node-server": "^1.19.11",
     "hono": "^4.12.7",
-    "inversify": "^6.2.2",
-    "reflect-metadata": "^0.2.2",
     "typescript": "^5.9.3"
   },
   "devDependencies": {

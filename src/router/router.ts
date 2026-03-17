@@ -1,13 +1,13 @@
 import { Hono } from "hono";
+import type { Route } from "@/router/route";
 
-import { BaseController, Route } from "@/adapters/ui/routes/base.controller";
-import { routings } from "@/router/routing.config";
-import { Container } from 'inversify';
+export const setUpRoutes = (app: Hono, routings: Route[]) => {
+  for (const route of routings) {
+    const handler = (c: Parameters<typeof route.controller.main>[0]) => route.controller.main(c);
 
-export const setUpRoutes = (app: Hono, container: Container) => {
-  routings.forEach((route: Route) => {
-    const controller = container.get<BaseController>(route.serviceName);
-    app.get(route.path, (c) => controller.main(c));
-  });
+    for (const method of route.methods) {
+      app[method](route.path, handler);
+    }
+  }
   return app;
 };

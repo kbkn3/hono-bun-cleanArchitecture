@@ -1,11 +1,7 @@
-import { injectable } from "inversify";
-import { Context } from "hono";
-import { BaseController } from "./base.controller";
+import type { Context } from "hono";
+import type { BaseController } from "./base.controller";
 
-@injectable()
 export class HomeController implements BaseController {
-  constructor() {}
-
   async main(c: Context) {
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -41,9 +37,9 @@ export class HomeController implements BaseController {
         <span class="path">/pokemon/:id</span>
         <span class="desc">— Get Pokémon by ID (1-898)</span>
       </a>
-      <a class="endpoint" href="/hello">
+      <a class="endpoint" href="/message/hello">
         <span class="method">GET</span>
-        <span class="path">/:message</span>
+        <span class="path">/message/:message</span>
         <span class="desc">— Echo back a message</span>
       </a>
     </div>
@@ -51,7 +47,6 @@ export class HomeController implements BaseController {
       <span class="badge">Hono</span>
       <span class="badge">Bun</span>
       <span class="badge">Clean Architecture</span>
-      <span class="badge">InversifyJS</span>
       <span class="badge">TypeScript</span>
     </div>
   </div>
