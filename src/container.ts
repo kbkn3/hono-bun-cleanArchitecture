@@ -9,10 +9,12 @@ import { HelloWorldUseCase } from "@/application/usecases/hello/usecase.impl";
 import { PokemonPresenter } from "@/adapters/ui/routes/pokemon/presenter";
 import { PokemonController } from "@/adapters/ui/routes/pokemon/pokemon.controller";
 import { HelloWorldController } from "@/adapters/ui/routes/hello.world.controller";
+import { HomeController } from "@/adapters/ui/routes/home.controller";
 
 export interface AppDependencies {
   logger: ILogger;
   controllers: {
+    home: BaseController;
     helloWorld: BaseController;
     pokemon: BaseController;
   };
@@ -37,12 +39,14 @@ export function createDependencies(): AppDependencies {
   const pokemonPresenter = new PokemonPresenter();
 
   // Controllers
+  const homeController = new HomeController();
   const helloWorldController = new HelloWorldController(helloWorldUseCase);
   const pokemonController = new PokemonController(pokemonIdUseCase, pokemonPresenter);
 
   return {
     logger,
     controllers: {
+      home: homeController,
       helloWorld: helloWorldController,
       pokemon: pokemonController,
     },
