@@ -1,9 +1,9 @@
 import { describe, expect, it, mock } from "bun:test";
 import { HelloWorldController } from "./hello.world.controller";
+import { HelloWorldUseCase } from "@/application/usecases/hello/usecase.impl";
 
 describe("HelloWorldController", () => {
   it("メッセージを正しく返す", async () => {
-    // モックコンテキスト
     const mockContext = {
       req: {
         param: (name: string) => {
@@ -11,18 +11,14 @@ describe("HelloWorldController", () => {
           return undefined;
         }
       },
-      json: mock((data: any) => {
+      json: mock((data: unknown) => {
         return { _data: data };
       })
     };
-    
-    // コントローラーの作成
-    const controller = new HelloWorldController();
-    
-    // コントローラーの実行
-    const result = await controller.main(mockContext as any);
-    
-    // 検証
+
+    const controller = new HelloWorldController(new HelloWorldUseCase());
+    const result = await controller.main(mockContext as any) as any;
+
     expect(mockContext.json).toHaveBeenCalled();
     expect(result._data).toEqual({ message: "TestMessage" });
   });

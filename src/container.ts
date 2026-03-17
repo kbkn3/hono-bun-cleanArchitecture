@@ -1,72 +1,50 @@
-import { Container } from "inversify";
-import { HelloWorldController } from "@/adapters/ui/routes/hello.world.controller";
-import {
-  CONTROLLER_BINDINGS,
-  INFRASTRUCTURE_BINDINGS,
-  REPOSITORY_BINDINGS,
-  USECASE_BINDINGS,
-} from "./keys";
-import { PokemonController } from "./adapters/ui/routes/pokemon/pokemon.controller";
-import type { PokemonIdInputPort } from "@/application/usecases/pokemon/usecase";
-import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
 import type { ILogger } from "@/application/logger/logger";
-import { PokemonImpl } from "@/adapters/gateways/gateways/pokemon.impl";
-import { PokemonIdUseCase } from "@/application/usecases/pokemon/usecase.impl";
+import type { PokemonRepository } from "@/application/repositories/pokemon/pokemon";
+import type { BaseController } from "@/adapters/ui/routes/base.controller";
 import { ConsoleLogger } from "@/adapters/logger/console.logger";
+import { PokemonImpl } from "@/adapters/gateways/pokemon.impl";
+import { CachingPokemonRepository } from "@/adapters/gateways/caching.pokemon.repository";
+import { PokemonIdUseCase } from "@/application/usecases/pokemon/usecase.impl";
+import { HelloWorldUseCase } from "@/application/usecases/hello/usecase.impl";
+import { PokemonPresenter } from "@/adapters/ui/routes/pokemon/presenter";
+import { PokemonController } from "@/adapters/ui/routes/pokemon/pokemon.controller";
+import { HelloWorldController } from "@/adapters/ui/routes/hello.world.controller";
 
-/**
- * DIコンテナを生成して返す
- */
-export function createContainer(): Container {
-  const container = new Container();
-  bindInfrastructure(container);
-  bindControllers(container);
-  bindUseCases(container);
-  bindRepositories(container);
-  // bindGatewayDataSources(container);
-
-  return container;
+export interface AppDependencies {
+  logger: ILogger;
+  controllers: {
+    helloWorld: BaseController;
+    pokemon: BaseController;
+  };
 }
 
 /**
- * コントローラをDIコンテナにバインドする
- * @param container - DIコンテナ
+ * 全ての依存関係を手動で構築して返す（Composition Root）
  */
-function bindControllers(container: Container): void {
-  container
-    .bind<HelloWorldController>(CONTROLLER_BINDINGS.HelloWorld)
-    .to(HelloWorldController);
-  container
-    .bind<PokemonController>(CONTROLLER_BINDINGS.Pokemon)
-    .to(PokemonController);
-}
+export function createDependencies(): AppDependencies {
+  // Infrastructure
+  const logger = new ConsoleLogger();
 
-/**
- * ユースケースをDIコンテナにバインドする
- * @param container - DIコンテナ
- */
-function bindUseCases(container: Container): void {
-  container
-    .bind<PokemonIdInputPort>(USECASE_BINDINGS.PokemonId)
-    .to(PokemonIdUseCase);
-}
+  // Repositories
+  const pokemonApi = new PokemonImpl(logger);
+  const pokemonRepository: PokemonRepository = new CachingPokemonRepository(pokemonApi);
 
-/**
- * リポジトリをDIコンテナにバインドする
- * @param container - DIコンテナ
- */
-function bindRepositories(container: Container): void {
-  container
-    .bind<PokemonRepository>(REPOSITORY_BINDINGS.Pokemon)
-    .to(PokemonImpl);
-}
+  // UseCases
+  const pokemonIdUseCase = new PokemonIdUseCase(pokemonRepository);
+  const helloWorldUseCase = new HelloWorldUseCase();
 
-/**
- * インフラストラクチャ層のサービスをDIコンテナにバインドする
- * @param container - DIコンテナ
- */
-function bindInfrastructure(container: Container): void {
-  container
-    .bind<ILogger>(INFRASTRUCTURE_BINDINGS.Logger)
-    .toConstantValue(new ConsoleLogger());
+  // Presenters
+  const pokemonPresenter = new PokemonPresenter();
+
+  // Controllers
+  const helloWorldController = new HelloWorldController(helloWorldUseCase);
+  const pokemonController = new PokemonController(pokemonIdUseCase, pokemonPresenter);
+
+  return {
+    logger,
+    controllers: {
+      helloWorld: helloWorldController,
+      pokemon: pokemonController,
+    },
+  };
 }

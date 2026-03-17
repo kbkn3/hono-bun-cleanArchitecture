@@ -1,6 +1,6 @@
-import type { Context, MiddlewareHandler } from "hono";
+import type { Context, ErrorHandler as HonoErrorHandler } from "hono";
 import { ApplicationStatusError, Status } from "@/domain/error";
-import { StatusCode } from "@/domain/status.code";
+import { StatusCode } from "@/adapters/http.status.code";
 import type { ILogger } from "@/application/logger/logger";
 
 // エラーレスポンスの型定義
@@ -10,129 +10,91 @@ export interface ErrorResponse {
   details: string;
 }
 
-/**
- * エラーハンドリングミドルウェアのオプション
- */
 export interface ErrorHandlerOptions {
   logger: ILogger;
 }
 
 /**
- * エラーハンドリングミドルウェア
- * アプリケーション内で発生した例外を適切なHTTPレスポンスに変換する
- * @param options - ミドルウェアオプション（loggerを含む）
+ * Honoのapp.onError()に登録するエラーハンドラを生成する
+ *
+ * Honoのcomposeはハンドラ単位でtry-catchするため、
+ * ミドルウェアのtry-catchではルートハンドラの例外を捕捉できない。
+ * app.onError()を使うことでHonoのエラーハンドリングと正しく統合する。
  */
-export const errorHandler = (options: ErrorHandlerOptions): MiddlewareHandler => {
+export function createErrorHandler(options: ErrorHandlerOptions): HonoErrorHandler {
   const { logger } = options;
 
-  return async (c: Context, next: () => Promise<void>) => {
-    try {
-      await next();
-    } catch (error) {
-      // ILoggerを使用してエラーをログ出力
-      logError(logger, error);
+  return (error: Error, c: Context) => {
+    logError(logger, error);
 
-      if (error instanceof ApplicationStatusError) {
-        // アプリケーション固有のエラー処理
-        return handleApplicationError(c, error);
-      } else {
-        // 未処理の例外
-        return handleUnexpectedError(c, error);
-      }
+    if (error instanceof ApplicationStatusError) {
+      return handleApplicationError(c, error);
     }
+    return handleUnexpectedError(c);
   };
-};
+}
 
-/**
- * エラーをスタックトレース付きでログ出力する
- */
 function logError(logger: ILogger, error: unknown): void {
   if (error instanceof Error) {
-    logger.error("Error caught by middleware", error, {
+    logger.error("Error caught by error handler", error, {
       errorType: error.constructor.name,
     });
   } else {
-    logger.error("Error caught by middleware", undefined, {
+    logger.error("Error caught by error handler", undefined, {
       type: typeof error,
       value: String(error),
     });
   }
 }
 
-/**
- * アプリケーション固有のエラーを処理する
- */
 function handleApplicationError(c: Context, error: ApplicationStatusError): Response {
-  // statusプロパティを使用してステータスコードを決定
-  const statusCode = mapStatusToHttpCode(error.status);
-  const errorMessage = mapStatusToMessage(error.status);
+  const mapping = resolveStatus(error.status);
 
   const responseBody: ErrorResponse = {
     status: "error",
-    message: errorMessage,
-    details: error.message
+    message: mapping.message,
+    details: mapping.httpCode >= 500 ? "Internal server error" : mapping.details,
   };
 
-  return new Response(
-    JSON.stringify(responseBody),
-    {
-      status: statusCode,
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  );
+  return c.json(responseBody, mapping.httpCode as any);
 }
 
-/**
- * ドメインStatusをHTTPステータスコードにマッピング
- */
-function mapStatusToHttpCode(status: Status): number {
-  switch (status) {
-    case Status.NOT_FOUND:
-      return StatusCode.NOT_FOUND;
-    case Status.ILLEGAL_DATA:
-      return StatusCode.BAD_REQUEST;
-    case Status.BFF_SYSTEM_ERROR:
-    default:
-      return StatusCode.INTERNAL_SERVER_ERROR;
-  }
+interface StatusMapping {
+  httpCode: number;
+  message: string;
+  details: string;
 }
 
-/**
- * ドメインStatusをエラーメッセージにマッピング
- */
-function mapStatusToMessage(status: Status): string {
-  switch (status) {
-    case Status.NOT_FOUND:
-      return "Resource not found";
-    case Status.ILLEGAL_DATA:
-      return "Invalid request data";
-    case Status.BFF_SYSTEM_ERROR:
-    default:
-      return "Internal server error";
-  }
+const STATUS_FALLBACK: StatusMapping = {
+  httpCode: StatusCode.INTERNAL_SERVER_ERROR,
+  message: "Internal server error",
+  details: "Internal server error",
+};
+
+const STATUS_MAP = new Map<Status, StatusMapping>([
+  [Status.NOT_FOUND, {
+    httpCode: StatusCode.NOT_FOUND,
+    message: "Resource not found",
+    details: "The requested resource was not found",
+  }],
+  [Status.ILLEGAL_DATA, {
+    httpCode: StatusCode.BAD_REQUEST,
+    message: "Invalid request data",
+    details: "The request contains invalid data",
+  }],
+  [Status.SYSTEM_ERROR, STATUS_FALLBACK],
+]);
+
+function resolveStatus(status: Status): StatusMapping {
+  return STATUS_MAP.get(status) ?? STATUS_FALLBACK;
 }
 
-/**
- * 予期しないエラーを処理する
- */
-function handleUnexpectedError(c: Context, error: unknown): Response {
-  const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-  
+function handleUnexpectedError(c: Context): Response {
   const responseBody: ErrorResponse = {
     status: "error",
     message: "Internal server error",
-    details: errorMessage
+    details: "An unexpected error occurred",
   };
-  
-  return new Response(
-    JSON.stringify(responseBody),
-    {
-      status: StatusCode.INTERNAL_SERVER_ERROR,
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }
-  );
+
+  return c.json(responseBody, StatusCode.INTERNAL_SERVER_ERROR as any);
 }
